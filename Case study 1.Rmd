@@ -1,0 +1,79 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+install.packages("readr")
+library("readr")
+install.packages("ggplot2")
+library(ggplot2)
+install.packages("tidyverse")
+require(tidyverse)
+install.packages("dplyr")
+library("dplyr") 
+install.packages("lubridate")
+library(lubridate)
+Sys.setlocale("LC_TIME", "English")
+
+v1 <- read.csv(file = 'C:\\Users\\LENOVO\\Downloads\\R case study new\\202103-divvy-tripdata.csv')
+v2 <- read.csv(file = 'C:\\Users\\LENOVO\\Downloads\\R case study new\\202104-divvy-tripdata.csv')
+v3 <- read.csv(file = 'C:\\Users\\LENOVO\\Downloads\\R case study new\\202105-divvy-tripdata.csv')
+v4 <- read.csv(file = 'C:\\Users\\LENOVO\\Downloads\\R case study new\\202106-divvy-tripdata.csv')
+v5 <- read.csv(file = 'C:\\Users\\LENOVO\\Downloads\\R case study new\\202107-divvy-tripdata.csv')
+v6 <- read.csv(file = 'C:\\Users\\LENOVO\\Downloads\\R case study new\\202108-divvy-tripdata.csv')
+v7 <- read.csv(file = 'C:\\Users\\LENOVO\\Downloads\\R case study new\\202109-divvy-tripdata.csv')
+v8 <- read.csv(file = 'C:\\Users\\LENOVO\\Downloads\\R case study new\\202110-divvy-tripdata.csv')
+v9 <- read.csv(file = 'C:\\Users\\LENOVO\\Downloads\\R case study new\\202111-divvy-tripdata.csv')
+v10 <- read.csv(file = 'C:\\Users\\LENOVO\\Downloads\\R case study new\\202112-divvy-tripdata.csv')
+v11 <- read.csv(file = 'C:\\Users\\LENOVO\\Downloads\\R case study new\\202201-divvy-tripdata.csv')
+v12 <- read.csv(file = 'C:\\Users\\LENOVO\\Downloads\\R case study new\\202202-divvy-tripdata.csv')
+
+v_total<- bind_rows(v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12)
+
+
+#delete rows with null values
+v_total[v_total==""]<-NA
+v_total<-v_total[complete.cases(v_total),]
+
+
+#create new column ride_length
+v_total$ride_length <- ymd_hms(v_total$ended_at)-ymd_hms(v_total$started_at)
+#delete the rows where the started time equal or greater than the end time 
+v_total<-v_total[v_total$ride_length>0, ]
+#create new column day of week
+v_total$day_of_week <-weekdays(as.Date(v_total$started_at))
+#create new column day of week
+v_total$month <-month(as.Date(v_total$started_at))
+
+write_csv(v_total, path ='C:\\Users\\LENOVO\\Downloads\\R case study new\\total.csv')
+
+
+v_total$day_of_week = factor(v_total$day_of_week, 
+                          levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+v_total %>% group_by(member_casual, day_of_week) %>% summarise(ride_length=mean(ride_length)) %>% 
+  ggplot(aes(fill=member_casual, y=ride_length, x=day_of_week))+geom_bar(position='dodge', stat='identity')
+
+mymonths <- c("January","February","March",
+              "April","May","June",
+              "July","August","September",
+              "October","November","December")
+#add month name
+v_total$month_of_year <- mymonths[v_total$month ]
+#all(v_total$month_of_year %in% month.name)
+v_total$month_of_year <- factor(v_total$month_of_year, levels=month.name)
+v_total %>% group_by(member_casual, month_of_year) %>% summarise(ride_length=mean(ride_length)) %>% 
+  ggplot(aes(fill=member_casual, y=ride_length, x=month_of_year))+geom_bar(position='dodge', stat='identity')
+```
+
+
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
